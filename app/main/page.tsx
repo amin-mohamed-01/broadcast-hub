@@ -98,6 +98,9 @@ export default function MainPage() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+  // NEW: Loading state while Firebase checks auth
+  const [authLoading, setAuthLoading] = useState(true);
+
   // --- MESSAGE SYSTEM STATES ---
   const [isMessageOpen, setIsMessageOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -238,17 +241,20 @@ export default function MainPage() {
     }
   }, []);
 
-  // Auth State Listener
+  // AUTH STATE LISTENER + AUTO REDIRECT
+  // If user is NOT signed in (never signed in or signed out), redirect to sign-in page
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
       } else {
         setUser(null);
+        router.push('/auth/sign');   // <-- This is the required redirect
       }
+      setAuthLoading(false); // auth check is done
     });
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
   // FORCE DARK MODE
   useEffect(() => {
@@ -284,6 +290,19 @@ export default function MainPage() {
     { id: 2, q: "What are the payment methods?", a: "We accept credit cards, bank transfers, and electronic payment methods." },
     { id: 3, q: "Are modifications allowed?", a: "Yes, you can request modifications after delivery as per the agreement." },
   ];
+
+  // Show loading screen while Firebase is checking auth state
+  // (prevents flash of content for unauthenticated users)
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#0B1120] text-slate-100 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-12 h-12 animate-spin text-blue-500" />
+          <p className="text-slate-400 text-sm">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0B1120] text-slate-100 font-sans selection:bg-blue-900 selection:text-white transition-colors duration-300">
@@ -618,4 +637,4 @@ export default function MainPage() {
       </main>
     </div>
   );
-}
+} 
