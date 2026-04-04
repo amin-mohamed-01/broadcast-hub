@@ -1,5 +1,9 @@
 import type { NextConfig } from "next";
 
+// React requires 'unsafe-eval' in dev mode for call-stack reconstruction.
+// We never allow it in production.
+const isDev = process.env.NODE_ENV === "development";
+
 const nextConfig: NextConfig = {
   // ── Remote image hosts ────────────────────────────────────────────────────
   images: {
@@ -39,13 +43,14 @@ const nextConfig: NextConfig = {
           { key: "X-DNS-Prefetch-Control", value: "on" },
           // Content Security Policy
           // NOTE: Firebase + Google Auth requires specific origins.
-          // 'unsafe-inline' is kept for styles because Tailwind injects styles at runtime.
+          // 'unsafe-inline' kept for styles (Tailwind runtime injection).
+          // 'unsafe-eval' only in dev (React debugging / Turbopack HMR).
           {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
               // Scripts: self + Firebase + Google Identity Services
-              "script-src 'self' 'unsafe-inline' https://apis.google.com https://www.gstatic.com https://www.googletagmanager.com",
+              `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://apis.google.com https://www.gstatic.com https://www.googletagmanager.com`,
               // Styles: self + inline (Tailwind)
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               // Fonts

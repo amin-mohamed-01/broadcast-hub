@@ -8,7 +8,7 @@ export default function Home() {
 
   useEffect(() => {
     // The only action: go to /auth/sign
-    router.replace('/auth/sign');
+    router.replace('/main');
   }, [router]);
 
   return null;
