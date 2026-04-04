@@ -537,6 +537,16 @@ export default function MainPage() {
     }
   }, []);
 
+  // Hide scrollbar while intro is visible
+  useEffect(() => {
+    if (showIntro) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [showIntro]);
+
   // AUTH STATE LISTENER — no redirect, just track the user
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
